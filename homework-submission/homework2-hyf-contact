@@ -1,0 +1,231 @@
+.App {
+  text-align: center;
+}
+
+.header {
+  background-color: blueviolet;
+  height: 5vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.headerLeft{
+  display: flex;
+  width: 50vw;
+  padding-left: 10px;
+  justify-content: left;
+  align-items: center; 
+}
+
+.headerRight{
+  display: flex;
+  width: 50vw;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.container{
+  display: flex;
+  flex-direction: row;
+}
+.LeftNav{
+  display: flex;
+  flex-direction: column;
+  width: 30vw;
+}
+.LeftNavSearch{
+  border: 1px solid blue;
+}
+
+.LeftNavItems{
+  border: 1px solid blue;
+  overflow-y: scroll;
+  height: 91vh;
+}
+
+.ContactDetails {
+  width: 80vw;
+  padding-left: 20px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.contactItem{
+  display: flex;
+  padding-top: 5px;
+  padding-left: 5px;
+  cursor: pointer;
+}
+
+.contactItemSelectected{
+  display: flex;
+  padding-top: 5px;
+  padding-left: 5px;
+  cursor: pointer;
+  background-color: blue;
+}
+.profile{
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+}
+
+.PersonProfile{
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+}
+.personHeader{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.detailsContainer{
+  display: flex;
+  flex-direction: row;
+}
+
+.detailsAttribut{
+  margin-left: 10px;
+  margin-right: 8px;
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: row;
+  width: 120px;
+}
+.detailsValue{
+  display: flex;
+  justify-content: flex-start;
+}
+
+
+
+import React, {useState, useEffect} from 'react';
+import axios from 'axios';
+import './App.css';
+import Header from './components/Header';
+import LeftNav from './components/LeftNav';
+import ContactDetails from './components/ContactDetails';
+
+function App() {
+  const [data, setData] = useState([])
+  const [selected, setSelected] = useState(1)
+
+  useEffect(()=>{
+    axios.get('https://api.myjson.com/bins/ofhd0')
+      .then(res => setData(res.data))
+  }, [])
+  return (
+    <div className="App">
+      <Header />
+      <div className="container">
+        <LeftNav data={data} setSelected={setSelected} selected={selected}/>
+        <ContactDetails data={data} selected={selected}/>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+import React from 'react';
+
+const Details = ({attribut, value}) => {
+
+    return(
+        <div className="detailsContainer">
+            <div className="detailsAttribut">
+                {attribut}
+            </div>
+            <div className="detailsValue">
+                <strong>{value}</strong>
+            </div>
+        </div>
+    )
+}
+
+
+const Person = ({infos}) => {
+    return(
+        <div>
+            <div className="personHeader">
+                <img className="PersonProfile" src={infos.profileImage} alt={infos.firstName} />
+                <span style={{paddingLeft:"20px", fontSize: "33px"}}>{infos.firstName} <strong>{infos.lastName}</strong></span>
+            </div>
+            <div>
+                <Details attribut="Mobile" value={infos.mobile}/>
+                <Details attribut="TELEPHONE" value={infos.telephone}/>
+                <Details attribut="EMAIL" value={infos.email}/>
+                <Details attribut="HOME_ADDRESS" value={infos.homeAddress}/>
+            </div>
+
+        </div>
+    )
+} 
+const ContactDetails = ({selected, data}) => {
+
+    let infos = data.find((item) => item.id === selected)
+  return (
+    <div className="ContactDetails">
+        {
+            infos ? <Person infos={infos} /> : null
+        }
+    </div>
+  );
+}
+
+export default ContactDetails;
+
+import React from 'react';
+
+const Header = () => {
+  
+    return (
+      <div className="header">
+        <div className="headerLeft">
+            Contacts
+        </div>
+        <div className="headerRight">
+            Create Contact
+        </div>
+      </div>
+    );
+}
+
+export default Header;
+
+import React from 'react';
+
+const ContactItem = ({itemdata, setSelected, selected}) => {
+    return(
+        <div 
+            className={selected === itemdata.id ? "contactItemSelectected" : "contactItem"} 
+            onClick={()=> setSelected(itemdata.id)}>
+            <img className="profile" src={itemdata.profileImage} alt={itemdata.firstName} />
+            <span style={{paddingLeft:"5px"}}>{itemdata.firstName} <strong>{itemdata.lastName}</strong></span>
+        </div>
+    )
+}
+
+const LeftNav = ({data, setSelected, selected}) => {
+    return (
+        <div className="LeftNav">
+            <div className="LeftNavSearch">
+                Search
+            </div>
+            <div className="LeftNavItems">
+                {
+                    data.length === 0 ? null : data.map((item, key)=> <ContactItem itemdata={item} key={key} setSelected={setSelected} selected={selected} /> )
+                }
+            </div>
+        </div>
+    );
+}
+
+export default LeftNav;
+
+
+
